@@ -1,0 +1,16 @@
+{
+  "web": {
+    "baseUrl": "http://127.0.0.1/mantisbt-1.2.20/"
+   },
+    "webadmin": {
+    "username": "administrator",
+    "password": "root"
+  },
+  "db": {
+    "host": "127.0.0.1",
+    "name": "bugtracker",
+    "user": "root",
+    "password": ""
+  }
+
+}
