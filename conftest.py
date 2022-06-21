@@ -6,6 +6,8 @@ import json
 import jsonpickle
 import os.path
 from fixture.db import DbFixture
+import ftputil
+
 # from fixture.orm import ORMFixture
 
 fixture = None
@@ -20,19 +22,24 @@ def load_config(file):
             target = json.load(f)
     return target
 
+@pytest.fixture(scope="session")
+def config(request):
+    return load_config(request.config.getoption("--target"))
+
 
 @pytest.fixture()
-def app(request):
+def app(request, config):
     global fixture
     # global target
     browser = request.config.getoption("--browser")
-    web_config = load_config(request.config.getoption("--target"))["web"]
+    # web_config = config["web"]
+    # web_config = load_config(request.config.getoption("--target"))["web"]
     # if target is None:
     #     config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), request.config.getoption("--target"))
     #     with open(config_file) as f:
     #         target = json.load(f)
     if fixture is None or not fixture.is_valid():
-        fixture = Application(browser=browser, base_url=web_config["baseUrl"])
+        fixture = Application(browser=browser, base_url=config["web"]["baseUrl"])
     # fixture.session.ensure_login(username=web_config["username"], password=web_config["password"])
     return fixture
 
@@ -48,6 +55,8 @@ def db(request):
 
     request.addfinalizer(fin)
     return dbfixture
+
+
 #
 #
 # @pytest.fixture(scope="session")
@@ -56,6 +65,35 @@ def db(request):
 #     ormfixture = ORMFixture(host=db_config["host"], name=db_config["name"], user=db_config["user"],
 #                            password=db_config["password"])
 #     return ormfixture
+
+
+
+
+@pytest.fixture(scope="session", autouse=True)
+def configure_server(request, config):
+    install_server_configuration(config['ftp']['host'], config['ftp']['username'], config['ftp']['password'])
+
+    def fin():
+        restore_server_configuration(config['ftp']['host'], config['ftp']['username'], config['ftp']['password'])
+
+    request.addfinalizer(fin)
+
+
+def install_server_configuration(host, username, password):
+    with ftputil.FTPHost(host, username, password) as remote:
+        if remote.path.isfile("config_inc.php.bak"):
+            remote.remove("config_inc.php.bak")
+        if remote.path.isfile("config_inc.php"):
+            remote.rename("config_inc.php", "config_inc.php.bak")
+        remote.upload(os.path.join(os.path.dirname(__file__), "resurses/config_inc.php"), "config_inc.php")
+
+
+def restore_server_configuration(host, username, password):
+    with ftputil.FTPHost(host, username, password) as remote:
+        if remote.path.isfile("config_inc.php.bak"):
+            if remote.path.isfile("config_inc.php"):
+                remote.remove("config_inc.php")
+            remote.rename("config_inc.php.bak", "config_inc.php")
 
 
 @pytest.fixture(scope="session", autouse=True)
