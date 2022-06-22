@@ -3,10 +3,9 @@ from model.project import Project
 
 
 def test_add_project1(app, db, json_projects):
-    if not app.session.is_logged_in():
-        app.session.login("administrator", "root")
+    app.session.ensure_login("administrator", "root")
     project = json_projects
-    db.clear_project_list()
+    # db.clear_project_list()
     old_projects = app.soap.get_list_project(username='administrator', password='root')
     # old_projects = db.get_project_list()
     app.project.create(project)

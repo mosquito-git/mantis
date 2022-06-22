@@ -4,11 +4,10 @@ from model.project import Project
 
 
 def test_del_project1(app, db):
-    if not app.session.is_logged_in():
-        app.session.login("administrator", "root")
-    db.clear_project_list()
+    app.session.ensure_login("administrator", "root")
+    # db.clear_project_list()
     if len(db.get_project_list()) == 0:
-        app.project.create(Project(project_name='ededede', project_desc='rfdsadsa'))
+        app.project.create(Project(project_name='erfwrq', project_desc='rfdsadsa'))
     # old_projects = db.get_project_list()
     old_projects = app.soap.get_list_project(username='administrator', password='root')
     app.project.del_project(old_projects[0])
