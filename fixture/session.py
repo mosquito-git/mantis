@@ -38,12 +38,13 @@ class SessionHelper:
         wd = self.app.wd
         return wd.find_element(By.CSS_SELECTOR, "td.login-info-left span").text
 
-    def ensure_login(self, username, password):
+    def ensure_login(self):
         wd = self.app.wd
+        username = self.app.config['web']['username']
+        password = self.app.config['web']['password']
         if self.is_logged_in():
             if self.is_logged_in_as(username):
                 return
             else:
                 self.logout()
         self.login(username, password)
-

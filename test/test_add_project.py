@@ -3,7 +3,7 @@ from model.project import Project
 
 
 def test_add_project1(app, db, json_projects):
-    app.session.ensure_login("administrator", "root")
+    app.session.ensure_login()
     project = json_projects
     db.clear_project_list()
     old_projects = app.soap.get_list_project()
